@@ -1,0 +1,11 @@
+mode: staging-only
+environment: staging
+limits:
+  max_output_tokens: 800
+  max_files_changed: 12
+  max_iterations_per_run: 1
+budgets:
+  max_escalation_calls_per_run: 1
+gating:
+  require_healthcheck_before_next_iteration: true
+  note: "Healthcheck must pass before any subsequent iteration (even though max_iterations_per_run=1)."
