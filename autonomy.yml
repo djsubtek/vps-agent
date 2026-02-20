@@ -1,0 +1,37 @@
+version: 1
+
+policy:
+  require_pr: true
+  require_tests_pass: true
+
+limits:
+  max_files_changed: 20
+  max_lines_changed: 600
+  max_cost_eur: 5.00
+
+restrictions:
+  restricted_paths:
+    - "^\\.github/workflows/"
+    - "^infra/"
+    - "^infrastructure/"
+    - "^deploy/"
+    - "^ops/"
+    - "^caddy/"
+    - "^Caddyfile$"
+    - "^Dockerfile$"
+    - "^docker-compose\\.yml$"
+    - "^docker-compose\\.yaml$"
+
+  immutable_files:
+    - "^autonomy\\.yml$"
+    - "^docker-compose\\.yml$"
+    - "^docker-compose\\.yaml$"
+
+merge_gates:
+  require_guard_ok: true
+  require_ci_success: true
+
+github:
+  owner: "djsubtek"
+  repo: "vps-agent"
+  default_branch: "main"
