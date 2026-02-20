@@ -1,10 +1,12 @@
 name: CI
 
 on:
+  push:
+    branches:
+      - feat/phase3-guard
   pull_request:
     branches:
-      - feat/orchestrator-phase1
-
+      - feat/phase3-guard
 jobs:
   build:
     runs-on: ubuntu-latest
