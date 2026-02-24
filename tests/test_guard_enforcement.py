@@ -9,6 +9,7 @@ import pytest
 from guard import cli
 from guard.git_diff import DiffStats
 from guard.policy import load_policy
+from backend.app.orchestrator import write_flow
 
 
 def _run(cmd: list[str], cwd: Path) -> None:
@@ -76,3 +77,14 @@ def test_limits_enforced(monkeypatch: pytest.MonkeyPatch) -> None:
 
     with pytest.raises(cli.PolicyViolation):
         cli.pre_pr()
+
+
+def test_disallowed_git_subcommand_blocked() -> None:
+    with pytest.raises(write_flow.WriteError):
+        write_flow.run_git(["git", "status"])
+
+
+def test_patch_size_limit_blocked() -> None:
+    big_patch = "a" * (200_000 + 1)
+    with pytest.raises(write_flow.WriteError):
+        write_flow.apply_patch_and_commit(big_patch, "msg")
