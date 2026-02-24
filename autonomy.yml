@@ -5,9 +5,9 @@ policy:
   require_tests_pass: true
 
 limits:
-  max_files_changed: 20
-  max_lines_changed: 600
-  max_cost_eur: 5.00
+  max_files_changed: 10
+  max_lines_changed: 300
+  max_cost_eur: 3.00
 
 restrictions:
   restricted_paths:
@@ -23,7 +23,6 @@ restrictions:
     - "^docker-compose\\.yaml$"
 
   immutable_files:
-    - "^autonomy\\.yml$"
     - "^docker-compose\\.yml$"
     - "^docker-compose\\.yaml$"
 
