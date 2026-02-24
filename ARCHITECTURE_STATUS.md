@@ -55,3 +55,11 @@ ai.pagesmaker.com als kontrollierter Agent-Host.
 ## Guardrail-Prinzip
 - Keine autonomen Root-Aktionen ohne Guard.
 - Änderungen streng begrenzt und auditierbar.
+
+## Guard Enforcement in Orchestrator
+- Write-Flow im Orchestrator wendet Patches via `git apply` an und staged die Änderungen.
+- Vor jedem Commit wird `python3 -m guard.cli pre-commit` im Repo-Root ausgeführt.
+- Commits passieren nur bei Guard-OK; Fehler werden als Blocker behandelt.
+- Nach dem Commit läuft `python3 -m guard.cli pre-pr` als Gate für PR-Erstellung.
+- PR-Preparation ist aktuell ein Stub mit klarer Schnittstelle für spätere GitHub-Integration.
+- Guard nutzt ausschließlich die bestehende `autonomy.yml` (version 1) als Policy-Quelle.
