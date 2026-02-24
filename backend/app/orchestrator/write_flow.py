@@ -6,9 +6,9 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Optional
 
-from backend.app.orchestrator.config import REPO_ROOT
-from backend.app.orchestrator.guard_runner import GuardError, run_pre_commit, run_pre_pr
-from backend.app.orchestrator import pr_gateway
+from app.orchestrator.config import REPO_ROOT
+from app.orchestrator.guard_runner import GuardError, run_pre_commit, run_pre_pr
+from app.orchestrator import pr_gateway
 
 
 @dataclass(frozen=True)

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import subprocess
 from typing import Optional
 
-from backend.app.orchestrator.config import REPO_ROOT
+from app.orchestrator.config import REPO_ROOT
 
 
 @dataclass(frozen=True)

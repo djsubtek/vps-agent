@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 
 from guard.policy import load_policy
 
-from backend.app.orchestrator.config import REPO_ROOT
+from app.orchestrator.config import REPO_ROOT
 
 
 def prepare_pr(

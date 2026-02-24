@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict
 
-from backend.app.orchestrator import service
+from app.orchestrator import service
 
 
 def _pick_idea(conn) -> int:
