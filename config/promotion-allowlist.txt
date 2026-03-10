@@ -1,0 +1,9 @@
+# Paths that may be promoted from workspace to runtime.
+# Patterns are relative to the workspace project root.
+
+roles/**
+tasks/**
+docs/**
+prompts/**
+data/openclaw/**
+tools/**
