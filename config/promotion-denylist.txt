@@ -1,0 +1,22 @@
+# Paths blocked from promotion even if an allowlist pattern matches.
+# Patterns are relative to the workspace project root.
+
+docker-compose.yml
+.env
+.env.*
+*.key
+*.pem
+*.crt
+secrets/**
+system/**
+systemd/**
+.git/**
+data/openclaw/openclaw.json
+data/openclaw/openclaw.json.*
+data/openclaw/ssh/**
+data/openclaw/identity/**
+data/openclaw/devices/**
+data/openclaw/logs/**
+data/openclaw/media/**
+data/openclaw/memory/**
+data/openclaw/*.tar.gz
