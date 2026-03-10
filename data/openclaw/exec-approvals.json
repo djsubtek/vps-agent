@@ -1,0 +1,246 @@
+{
+  "version": 1,
+  "socket": {
+    "path": "/home/node/.openclaw/exec-approvals.sock",
+    "token": "d3uMRIwFVwzOuhXpem2oJDuC0f3h2IZZ"
+  },
+  "defaults": {
+    "security": "allowlist",
+    "ask": "on-miss"
+  },
+  "agents": {
+    "*": {
+      "allowlist": [
+        {
+          "pattern": "/usr/bin/git*",
+          "id": "90cf2be2-f44e-4d43-9062-7f756d235406"
+        },
+        {
+          "pattern": "/bin/cp*",
+          "id": "435f0350-a7b3-4b3d-a2d4-f1d0db34cbce"
+        },
+        {
+          "pattern": "/usr/bin/cp*",
+          "id": "6eb137a5-0f1f-4e26-8a34-9e21d4830cf3"
+        },
+        {
+          "pattern": "/opt/vps-agent/tools/openclaw-update.sh",
+          "id": "e03f89e9-9111-430f-b9e5-08bdc01cddb0"
+        }
+      ]
+    },
+    "main": {
+      "allowlist": [
+        {
+          "pattern": "/bin/pwd",
+          "lastUsedAt": 1773071249994,
+          "id": "abf2d641-8144-44a2-86fc-20aa556e822a",
+          "lastUsedCommand": "/bin/pwd",
+          "lastResolvedPath": "/bin/pwd"
+        },
+        {
+          "pattern": "/usr/bin/pwd",
+          "lastUsedAt": 1773046711204,
+          "id": "1b96db1c-28f2-453d-b52f-74008bf3577f",
+          "lastUsedCommand": "pwd",
+          "lastResolvedPath": "/usr/bin/pwd"
+        },
+        {
+          "pattern": "/bin/ls",
+          "lastUsedAt": 1773081506621,
+          "id": "5ec770dd-5b80-4bf9-b5a9-2b0d03e13ef6",
+          "lastUsedCommand": "/bin/ls -la /home/node/.openclaw/workspace/vps-agent",
+          "lastResolvedPath": "/bin/ls"
+        },
+        {
+          "pattern": "/usr/bin/ls",
+          "lastUsedAt": 1773046728527,
+          "id": "376d12b7-bbcb-4d10-832f-877cd2ec7c56",
+          "lastUsedCommand": "ls -la ~/.openclaw || echo '~/.openclaw not present'",
+          "lastResolvedPath": "/usr/bin/ls"
+        },
+        {
+          "pattern": "/bin/cat",
+          "lastUsedAt": 1773084873199,
+          "id": "882f5c62-344c-4ead-8207-14557bf534cb",
+          "lastUsedCommand": "/bin/cat /tmp/hostname_test",
+          "lastResolvedPath": "/bin/cat"
+        },
+        {
+          "pattern": "/usr/bin/cat",
+          "lastUsedAt": 1773042853359,
+          "id": "e2cad4fc-003a-41bc-9802-75f8bf6c633b"
+        },
+        {
+          "pattern": "/bin/echo",
+          "lastUsedAt": 1773069659469,
+          "id": "a1044733-a3a4-4b69-a00d-4dc8605a2291",
+          "lastUsedCommand": "/bin/echo openclaw | /usr/bin/tr a-z A-Z",
+          "lastResolvedPath": "/bin/echo"
+        },
+        {
+          "pattern": "/usr/bin/echo",
+          "lastUsedAt": 1773046728528,
+          "id": "8db3b97d-3ccf-4189-a52e-02acd8eb0d1e",
+          "lastUsedCommand": "ls -la ~/.openclaw || echo '~/.openclaw not present'",
+          "lastResolvedPath": "/usr/bin/ls"
+        },
+        {
+          "pattern": "/bin/grep",
+          "lastUsedAt": 1773042860302,
+          "id": "39d2bca3-cdab-493e-a8e7-663dccb44df5"
+        },
+        {
+          "pattern": "/usr/bin/grep",
+          "lastUsedAt": 1773042862575,
+          "id": "9de40653-a178-43b2-9583-10b86f508455"
+        },
+        {
+          "pattern": "/usr/bin/whoami",
+          "lastUsedAt": 1773071256657,
+          "id": "c715039b-f013-4290-be16-388d32188e16",
+          "lastUsedCommand": "/usr/bin/whoami",
+          "lastResolvedPath": "/usr/bin/whoami"
+        },
+        {
+          "pattern": "/usr/bin/hostname",
+          "lastUsedAt": 1773045685844,
+          "id": "ebb09e0d-6175-4ab1-b8ba-3e284c7281ab",
+          "lastUsedCommand": "hostname",
+          "lastResolvedPath": "/usr/bin/hostname"
+        },
+        {
+          "pattern": "/usr/bin/id",
+          "lastUsedAt": 1773071262537,
+          "id": "34ec4f10-a3ab-4a71-8c00-9ecfca713011",
+          "lastUsedCommand": "/usr/bin/id",
+          "lastResolvedPath": "/usr/bin/id"
+        },
+        {
+          "pattern": "/usr/bin/uname",
+          "lastUsedAt": 1773045712658,
+          "id": "dfe5c765-31bd-4b4f-b0a8-afe96c5da585",
+          "lastUsedCommand": "uname -a",
+          "lastResolvedPath": "/usr/bin/uname"
+        },
+        {
+          "pattern": "/bin/hostname",
+          "lastUsedAt": 1773071259838,
+          "id": "802efecd-2ca8-4e57-82fb-354ec61d8e2f",
+          "lastUsedCommand": "/bin/hostname",
+          "lastResolvedPath": "/bin/hostname"
+        },
+        {
+          "pattern": "/bin/uname",
+          "lastUsedAt": 1773071266902,
+          "id": "7ba99043-834b-40b9-bd30-168831716772",
+          "lastUsedCommand": "/bin/uname -a",
+          "lastResolvedPath": "/bin/uname"
+        },
+        {
+          "pattern": "/bin/sed",
+          "id": "dfdf439d-dc07-4bf7-8a01-81eb8626c395",
+          "lastUsedAt": 1773068748016,
+          "lastUsedCommand": "/bin/sed -n 1,120p /proc/1/cmdline",
+          "lastResolvedPath": "/bin/sed"
+        },
+        {
+          "pattern": "/usr/bin/tr",
+          "id": "72bd8914-2d87-43b7-91fa-ad88e0f7d736",
+          "lastUsedAt": 1773069659469,
+          "lastUsedCommand": "/bin/echo openclaw | /usr/bin/tr a-z A-Z",
+          "lastResolvedPath": "/bin/echo"
+        },
+        {
+          "pattern": "/usr/bin/jq",
+          "id": "e593ee3e-c42e-4d15-8716-59a27057e8e7",
+          "lastUsedAt": 1773068733900,
+          "lastUsedCommand": "/usr/bin/jq . /opt/vps-agent/data/openclaw/openclaw.json | /usr/bin/head -n 40"
+        },
+        {
+          "pattern": "/usr/bin/head",
+          "id": "bb5423a9-e22d-4ae1-8e47-bb7c21e8928d",
+          "lastUsedAt": 1773072797806,
+          "lastUsedCommand": "/usr/bin/head -n 200 /home/node/.openclaw/openclaw.json",
+          "lastResolvedPath": "/usr/bin/head"
+        },
+        {
+          "pattern": "/usr/bin/tail",
+          "id": "b1e7fe17-e5a2-4c5f-a0f1-b6810249cfe0",
+          "lastUsedAt": 1773069851537,
+          "lastUsedCommand": "/usr/bin/tail -n 3 /home/node/.openclaw/openclaw.json",
+          "lastResolvedPath": "/usr/bin/tail"
+        },
+        {
+          "pattern": "/usr/bin/find",
+          "id": "1e05725b-0e0d-4cb1-9763-6803cd796362",
+          "lastUsedAt": 1773069638324,
+          "lastUsedCommand": "/usr/bin/find /home/node/.openclaw -maxdepth 0",
+          "lastResolvedPath": "/usr/bin/find"
+        },
+        {
+          "pattern": "/usr/bin/stat",
+          "id": "65e0ea64-844b-4efe-9938-0fb0805bf4ed",
+          "lastUsedAt": 1773069859989,
+          "lastUsedCommand": "/usr/bin/stat /etc/hostname",
+          "lastResolvedPath": "/usr/bin/stat"
+        },
+        {
+          "pattern": "/usr/bin/env",
+          "id": "042d4c00-694b-448d-bbdf-8bb51304419f"
+        },
+        {
+          "pattern": "/usr/bin/git*",
+          "id": "45f8465b-676a-4df3-8d72-36baedb0838c",
+          "lastUsedAt": 1773134112104,
+          "lastUsedCommand": "/usr/bin/git -C /home/node/.openclaw/workspace/vps-agent status --short",
+          "lastResolvedPath": "/usr/bin/git"
+        },
+        {
+          "pattern": "/bin/cp*",
+          "id": "01faf426-fd83-4f33-bf86-b74b42a4a7da",
+          "lastUsedAt": 1773134121943,
+          "lastUsedCommand": "/bin/cp --version",
+          "lastResolvedPath": "/bin/cp"
+        },
+        {
+          "id": "dde3eff7-4461-4025-b532-1bfc3746eba0",
+          "pattern": "/usr/bin/mkdir",
+          "lastUsedAt": 1773134613070
+        },
+        {
+          "id": "09f71ac5-71d2-4a99-a18a-62719926655e",
+          "pattern": "/usr/bin/sleep",
+          "lastUsedAt": 1773136890426
+        }
+      ]
+    },
+    "release": {
+      "allowlist": [
+        {
+          "pattern": "/usr/bin/git*",
+          "id": "aba65e00-a22c-4932-b837-9327f3633f59",
+          "lastUsedAt": 1773071057113,
+          "lastUsedCommand": "/usr/bin/git --version",
+          "lastResolvedPath": "/usr/bin/git"
+        },
+        {
+          "pattern": "/usr/bin/jq",
+          "id": "eaefe5f4-2628-43ac-98c4-96201f019363",
+          "lastUsedAt": 1773071062463,
+          "lastUsedCommand": "/usr/bin/jq --version"
+        },
+        {
+          "pattern": "/usr/bin/docker",
+          "id": "4a88b7dc-b0f9-4a0a-8904-ebad43b2cac8",
+          "lastUsedAt": 1773071067933,
+          "lastUsedCommand": "/usr/bin/docker ps"
+        },
+        {
+          "pattern": "/usr/bin/docker-compose",
+          "id": "66d0542d-8ad6-42e2-8776-47a83c3d0cf8"
+        }
+      ]
+    }
+  }
+}
