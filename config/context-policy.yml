@@ -1,9 +1,16 @@
 context:
   max_tokens_target: 40000
 
+context_management:
+  max_tokens: 200000
+  flush_threshold: 120000
+  compact_threshold: 160000
+
 memory:
   flush_after_task: true
+  flush_strategy: summarize
   keep_summary_lines: 10
+  keep_goal: true
   keep_changed_files: true
 
 files:
