@@ -1,21 +1,12 @@
-# Cost Control Policy for Builder Mode
+# Cost Control Policy (Operational)
 
-Summary:
-This policy reduces API usage and keeps autonomous runs lightweight by restricting memory, enforcing stage-based execution, performing diff-first checks, and setting conservative run limits.
+Principles:
+- Memory flush: after each completed task, keep only goal, result, changed files, next step.
+- Stage-based execution: PLAN → BUILD → REVIEW → DONE; pass minimal context between stages.
+- Diff-first: compute affected files and skip build if no relevant changes.
+- Run limits: planning rounds ≤2, retries ≤1, subagent spawns ≤2.
+- Minimal responses: STATUS / RESULT / NEXT only.
+- Truncated tool output: limit lines returned from tools.
+- Close child sessions after task completion.
 
-Memory flush:
-- After each completed task, retain only: goal, result, changed files, next step. Discard detailed interaction history before the next run.
-
-Stage-based workflow:
-- PLAN -> BUILD -> REVIEW -> DONE
-- Pass minimal context between stages (only what's required for that stage).
-
-Diff-first workflow:
-- Before BUILD, compute a repo diff and list affected files.
-- If no relevant changes, skip build stage.
-
-Run limits:
-- max planning rounds: 2
-- max retries: 1
-- max subagent spawns per task: 2
-- If any limit is exceeded, stop and return short status only.
+Usage: keep this file updated in repo docs and enforce in Builder Mode runtime.
