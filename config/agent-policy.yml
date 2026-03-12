@@ -1,0 +1,17 @@
+execution:
+  stages:
+    - PLAN
+    - BUILD
+    - REVIEW
+    - DONE
+
+limits:
+  planning_rounds: 2
+  retries: 2
+  subagent_spawns: 2
+
+responses:
+  format:
+    - STATUS
+    - RESULT
+    - NEXT
