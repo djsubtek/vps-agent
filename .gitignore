@@ -1,2 +1,8 @@
-.venv/
-__pycache__/
+# Runtime artifacts
+data/
+workspace/
+logs/
+backups/
+*.bak
+*.log
+openclaw_running_container.json
