@@ -26,6 +26,26 @@ restrictions:
     - "^docker-compose\\.yml$"
     - "^docker-compose\\.yaml$"
 
+overrides:
+  pre_commit:
+    - id: "board-dashboard"
+      allowed_exact_paths:
+        - "backend/Dockerfile"
+        - "backend/app/board/__init__.py"
+        - "backend/app/board/migrations/001_board.sql"
+        - "backend/app/board/router.py"
+        - "backend/app/board/service.py"
+        - "backend/app/board/static/board.css"
+        - "backend/app/board/static/board.js"
+        - "backend/app/board/templates/index.html"
+        - "backend/app/main.py"
+        - "backend/requirements.txt"
+        - "caddy/Caddyfile"
+        - "docker-compose.yml"
+        - "docs/board-architecture.md"
+      max_files_changed: 20
+      max_lines_changed: 2000
+
 merge_gates:
   require_guard_ok: true
   require_ci_success: true

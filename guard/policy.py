@@ -5,6 +5,14 @@ import yaml
 
 
 @dataclass(frozen=True)
+class PreCommitOverride:
+    id: str
+    allowed_exact_paths: List[str]
+    max_files_changed: int
+    max_lines_changed: int
+
+
+@dataclass(frozen=True)
 class Policy:
     require_pr: bool
     require_tests_pass: bool
@@ -15,6 +23,7 @@ class Policy:
 
     restricted_paths: List[str]
     immutable_files: List[str]
+    pre_commit_overrides: List[PreCommitOverride]
 
     require_guard_ok: bool
     require_ci_success: bool
@@ -43,8 +52,20 @@ def load_policy(path: str = "autonomy.yml") -> Policy:
     policy = data.get("policy", {})
     limits = data.get("limits", {})
     restrictions = data.get("restrictions", {})
+    overrides = data.get("overrides", {})
     merge_gates = data.get("merge_gates", {})
     gh = data.get("github", {})
+
+    pre_commit_overrides = []
+    for item in overrides.get("pre_commit", []):
+        pre_commit_overrides.append(
+            PreCommitOverride(
+                id=str(_must(item, "id")),
+                allowed_exact_paths=list(item.get("allowed_exact_paths", [])),
+                max_files_changed=int(item.get("max_files_changed", limits.get("max_files_changed", 0))),
+                max_lines_changed=int(item.get("max_lines_changed", limits.get("max_lines_changed", 0))),
+            )
+        )
 
     return Policy(
         require_pr=bool(policy.get("require_pr", True)),
@@ -56,6 +77,7 @@ def load_policy(path: str = "autonomy.yml") -> Policy:
 
         restricted_paths=list(restrictions.get("restricted_paths", [])),
         immutable_files=list(restrictions.get("immutable_files", [])),
+        pre_commit_overrides=pre_commit_overrides,
 
         require_guard_ok=bool(merge_gates.get("require_guard_ok", True)),
         require_ci_success=bool(merge_gates.get("require_ci_success", True)),
