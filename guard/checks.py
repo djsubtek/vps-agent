@@ -1,7 +1,7 @@
 import os
 import re
 import subprocess
-from typing import List
+from typing import List, Optional, Set
 from .policy import Policy
 from .git_diff import DiffStats
 
@@ -29,10 +29,14 @@ def _exists_in_base(path: str, base_branch: str) -> bool:
     return path in out.splitlines()
 
 
-def check_paths(policy: Policy, files: List[str]) -> None:
+def check_paths(policy: Policy, files: List[str], allowed_exact_paths: Optional[Set[str]] = None) -> None:
     blocked = []
+    allowed_exact_paths = allowed_exact_paths or set()
 
     for f in files:
+        if f in allowed_exact_paths:
+            continue
+
         # Immutable handling: allow creation if not yet in base branch
         if _matches_any(policy.immutable_files, f):
             if _exists_in_base(f, policy.default_branch):

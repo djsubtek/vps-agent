@@ -1,0 +1,39 @@
+{
+    default_bind 187.77.89.120 127.0.0.1
+}
+
+(board_routes) {
+    encode zstd gzip
+
+    @board_api path /board/api/*
+    handle @board_api {
+        reverse_proxy 127.0.0.1:8001
+    }
+
+    @board path /board /board/*
+    handle @board {
+        reverse_proxy 127.0.0.1:8001
+    }
+
+    @control path /control /control/*
+    handle @control {
+        reverse_proxy 127.0.0.1:18789
+    }
+
+    handle {
+        reverse_proxy 127.0.0.1:18789
+    }
+}
+
+ai.pagesmaker.com {
+    import board_routes
+}
+
+http://srv1401539.tail1429d2.ts.net {
+    import board_routes
+}
+
+https://srv1401539.tail1429d2.ts.net {
+    tls internal
+    import board_routes
+}

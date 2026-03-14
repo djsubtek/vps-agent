@@ -1,4 +1,58 @@
 services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: vps-agent-backend
+    container_name: vps-agent-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: /app
+      BOARD_DB_PATH: /app/data/board.db
+    volumes:
+      - /opt/vps-agent/data/board:/app/data
+    ports:
+      - "127.0.0.1:8001:8000"
+  caddy:
+    image: caddy:2.10.2
+    container_name: caddy
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /opt/vps-agent/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+  openclaw:
+    build:
+      context: ./docker/openclaw-builder
+      dockerfile: Dockerfile
+    image: vps-agent-openclaw-builder:latest
+    container_name: openclaw
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
+    environment:
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_PROVIDER: openai
+      OPENAI_MODEL: gpt-5-mini
+      GATEWAY_CONTROLUI_ALLOWEDORIGINS: '["https://srv1401539.tail1429d2.ts.net","https://ai.pagesmaker.com"]'
+      GATEWAY_TRUSTEDPROXIES: '["172.21.0.0/16","127.0.0.1/32"]'
+      GATEWAY_TRUSTED_PROXIES: 172.16.0.0/12,10.0.0.0/8,192.168.0.0/16,127.0.0.1,::1
+      GH_TOKEN: ${GH_TOKEN}
+    command:
+      - node
+      - openclaw.mjs
+      - gateway
+      - --allow-unconfigured
+    volumes:
+      - /opt/vps-agent/data/openclaw:/home/node/.openclaw
+      - /opt/vps-agent/data/openclaw/ssh:/home/node/.ssh:ro
+      - /opt/vps-agent/data/openclaw/work:/work
+      - /opt/vps-agent:/opt/vps-agent
+      - /opt/vps-agent/openclaw-patches/subagent-registry-CVXe4Cfs.js:/app/dist/subagent-registry-CVXe4Cfs.js:ro
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
@@ -9,4 +63,6 @@ services:
       - "11434:11434"
 
 volumes:
+  caddy_data:
+  caddy_config:
   ollama:

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenClaw Orchestration Board</title>
+    <link rel="stylesheet" href="/board/assets/board.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark">OC</span>
+          <div>
+            <p class="eyebrow">Orchestration</p>
+            <h1>Board</h1>
+          </div>
+        </div>
+
+        <nav class="nav">
+          <button class="nav-item active">Overview</button>
+          <button class="nav-item" id="open-task-form">New Task</button>
+          <button class="nav-item">Agents</button>
+          <button class="nav-item">Approvals</button>
+          <button class="nav-item">Settings</button>
+        </nav>
+
+        <section class="task-form-panel" id="task-form-panel" hidden>
+          <p class="section-kicker">Create task</p>
+          <form id="task-form">
+            <label>
+              Title
+              <input name="title" maxlength="120" required />
+            </label>
+            <label>
+              Summary
+              <textarea name="summary" maxlength="280" required></textarea>
+            </label>
+            <label>
+              Detail
+              <textarea name="detail" maxlength="2000"></textarea>
+            </label>
+            <label>
+              Agent
+              <input name="assigned_agent" value="main" maxlength="60" />
+            </label>
+            <div class="task-form-grid">
+              <label>
+                Priority
+                <select name="priority">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </label>
+              <label>
+                Status
+                <select name="status">
+                  <option value="backlog" selected>Backlog</option>
+                  <option value="todo">To Do</option>
+                  <option value="running">Running</option>
+                  <option value="review">Review</option>
+                  <option value="done">Done</option>
+                </select>
+              </label>
+            </div>
+            <button type="submit" class="primary-action">Add to board</button>
+          </form>
+        </section>
+
+        <section class="legend">
+          <p class="section-kicker">MVP mode</p>
+          <p>Runtime health is real. Task orchestration content is intentionally mock-seeded until deeper adapters are ready.</p>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="workspace-header">
+          <div>
+            <p class="eyebrow">Private orchestration surface</p>
+            <h2>Agent control room</h2>
+          </div>
+          <div class="header-meta" id="header-meta"></div>
+        </header>
+
+        <section class="board-grid" id="board-grid"></section>
+      </main>
+
+      <aside class="intel-panel">
+        <section class="intel-card">
+          <div class="intel-header">
+            <p class="section-kicker">AI summary</p>
+            <span class="source-pill">mixed</span>
+          </div>
+          <div id="summary-list" class="stack"></div>
+        </section>
+
+        <section class="intel-card">
+          <div class="intel-header">
+            <p class="section-kicker">Live agent activity</p>
+            <span class="source-pill">mixed</span>
+          </div>
+          <div id="agent-list" class="stack"></div>
+        </section>
+
+        <section class="intel-card">
+          <div class="intel-header">
+            <p class="section-kicker">Pending approvals</p>
+            <span class="source-pill">mock</span>
+          </div>
+          <div id="approval-list" class="stack"></div>
+        </section>
+
+        <section class="intel-card">
+          <div class="intel-header">
+            <p class="section-kicker">Recurring tasks</p>
+            <span class="source-pill">mock</span>
+          </div>
+          <div id="recurring-list" class="stack"></div>
+        </section>
+
+        <section class="intel-card">
+          <div class="intel-header">
+            <p class="section-kicker">System health</p>
+            <span class="source-pill">mixed</span>
+          </div>
+          <div id="system-health" class="stack"></div>
+          <div id="system-events" class="stack compact"></div>
+        </section>
+      </aside>
+    </div>
+
+    <dialog id="task-detail-dialog" class="detail-dialog">
+      <button class="dialog-close" id="detail-close" aria-label="Close">Close</button>
+      <div id="detail-content"></div>
+    </dialog>
+
+    <script src="/board/assets/board.js" defer></script>
+  </body>
+</html>
