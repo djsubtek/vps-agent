@@ -1,0 +1,20 @@
+diff --git a/ui/src/ui/app-render.ts b/ui/src/ui/app-render.ts
+index c6f4f31d8e..86c38fd64c 100644
+--- a/ui/src/ui/app-render.ts
++++ b/ui/src/ui/app-render.ts
+@@ -464,6 +464,15 @@ export function renderApp(state: AppViewState) {
+           </div>
+         </div>
+       </header>
++      ${state.attentionItems && state.attentionItems.length
++        ? html`<div style="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9999;background:#ffefc2;color:#1b1b1b;padding:8px 12px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);max-width:90%;min-width:320px;text-align:center;font-family:system-ui,Segoe UI,Roboto,sans-serif;">
++            ${state.attentionItems.map(
++              (it) => html`<span style="font-weight:600;margin-right:8px;">${it.title}</span>`,
++            )}
++            <a href="/#cron" style="color:inherit;text-decoration:underline;margin-left:8px;">Open cron</a>
++            <button @click=${() => (state.attentionItems = [])} style="position:absolute;right:6px;top:4px;border:none;background:transparent;font-size:18px;cursor:pointer;">${icons.x}</button>
++          </div>`
++        : nothing}
+       <div class="shell-nav">
+         <aside class="sidebar ${navCollapsed ? "sidebar--collapsed" : ""}">
+           <div class="sidebar-shell">
