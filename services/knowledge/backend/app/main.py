@@ -1,4 +1,5 @@
 import base64
+import logging
 from binascii import Error as Base64Error
 
 from fastapi import FastAPI
@@ -7,11 +8,13 @@ from pydantic import BaseModel, Field
 
 from app import models
 from app.db import SessionLocal, ensure_database
+from app.extraction import extract_text_from_file
 from app.storage import save_file
 
 ensure_database()
 
 app = FastAPI(title="Knowledge Service")
+logger = logging.getLogger(__name__)
 
 
 class IngestRequest(BaseModel):
@@ -39,6 +42,12 @@ def ingest(payload: IngestRequest):
             raise HTTPException(status_code=422, detail="file_content_base64 must be valid base64") from exc
 
         file_path = save_file(file_bytes, payload.file_name or "upload.bin")
+        extracted_text = None
+
+        try:
+            extracted_text = extract_text_from_file(file_path)
+        except Exception:
+            logger.exception("file text extraction failed for %s", file_path)
 
         with SessionLocal() as session:
             item = models.Item(
@@ -46,7 +55,8 @@ def ingest(payload: IngestRequest):
                 content_type="file",
                 file_path=file_path,
                 file_name=payload.file_name,
-                status="stored",
+                extracted_text=extracted_text,
+                status="processed",
             )
             session.add(item)
             session.commit()

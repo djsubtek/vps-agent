@@ -7,7 +7,7 @@
 - `content_type`: Required content type from the ingest request, such as `text`.
 - `title`: Optional human-readable title.
 - `raw_content`: Optional original payload content.
-- `extracted_text`: Optional normalized text extracted from source content.
+- `extracted_text`: Optional readable text extracted from uploaded PDFs or images.
 - `summary`: Optional generated summary for later AI processing.
 - `category`: Optional classification label.
 - `tags`: Optional JSON array for labels or keywords.
@@ -23,6 +23,6 @@
 3. The backend stores a new `items` row with `status` set to `new`.
 4. The response returns the stored item UUID.
 
-For file ingestion, the client sends `type=file`, `file_name`, `file_content_base64`, and optional `source`. The backend stores the file locally, records `file_path` and `file_name`, and sets `status` to `stored`.
+For file ingestion, the client sends `type=file`, `file_name`, `file_content_base64`, and optional `source`. The backend stores the file locally, records `file_path` and `file_name`, extracts readable text into `extracted_text` when supported, and sets `status` to `processed`.
 
-This phase supports text and local file ingestion only. Extraction, summarization, tagging, categorization, and remote object storage are reserved for later phases.
+This phase supports text ingestion, local file ingestion, PDF text extraction, and basic image OCR. Summarization, tagging, categorization, and remote object storage are reserved for later phases.

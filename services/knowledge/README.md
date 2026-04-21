@@ -41,6 +41,8 @@ curl -X POST http://localhost:8010/ingest \
   }'
 ```
 
+For supported files, the service stores the upload under `/storage`, extracts readable text automatically, saves it in `extracted_text`, and marks the item as `processed`.
+
 ## Architecture
 
-Docker Compose runs a FastAPI backend and PostgreSQL database. The backend reads `DATABASE_URL` from `.env`, initializes the `items` table at startup, stores incoming text payloads through `POST /ingest`, and persists uploaded files under `/storage`.
+Docker Compose runs a FastAPI backend and PostgreSQL database. The backend reads `DATABASE_URL` from `.env`, initializes the `items` table at startup, stores incoming text payloads through `POST /ingest`, persists uploaded files under `/storage`, and extracts text from supported PDFs and images.
