@@ -9,8 +9,8 @@
 - `raw_content`: Optional original payload content.
 - `extracted_text`: Optional readable text extracted from uploaded PDFs or images.
 - `summary`: Optional generated summary for later AI processing.
-- `category`: Optional classification label.
-- `tags`: Optional JSON array for labels or keywords.
+- `category`: Optional classification label, set by policy rules when matched.
+- `tags`: Optional JSON array for labels or keywords, extended by policy rules when matched.
 - `file_path`: Optional local storage path for uploaded files.
 - `file_name`: Optional original uploaded file name.
 - `status`: Required processing status, defaulting to `new`.
@@ -26,3 +26,5 @@
 For file ingestion, the client sends `type=file`, `file_name`, `file_content_base64`, and optional `source`. The backend stores the file locally, records `file_path` and `file_name`, extracts readable text into `extracted_text` when supported, and sets `status` to `processed`.
 
 This phase supports text ingestion, local file ingestion, PDF text extraction, and basic image OCR. Summarization, tagging, categorization, and remote object storage are reserved for later phases.
+
+Policy rules can set `category` and add `tags` during ingestion. If no policy matches, these fields remain unchanged.

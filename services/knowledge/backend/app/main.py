@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from app import models
 from app.db import SessionLocal, ensure_database
 from app.extraction import extract_text_from_file
+from app.policy_engine import apply_actions, load_rules, match_rule
 from app.storage import save_file
 
 ensure_database()
@@ -58,6 +59,7 @@ def ingest(payload: IngestRequest):
                 extracted_text=extracted_text,
                 status="processed",
             )
+            apply_first_matching_policy(item)
             session.add(item)
             session.commit()
             session.refresh(item)
@@ -71,8 +73,19 @@ def ingest(payload: IngestRequest):
             raw_content=payload.content,
             status="new",
         )
+        apply_first_matching_policy(item)
         session.add(item)
         session.commit()
         session.refresh(item)
 
     return {"status": "stored", "item_id": str(item.id)}
+
+
+def apply_first_matching_policy(item):
+    try:
+        for rule in load_rules():
+            if match_rule(item, rule):
+                apply_actions(item, rule)
+                return
+    except Exception:
+        logger.exception("policy application failed")

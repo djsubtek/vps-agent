@@ -8,6 +8,7 @@ services:
       - "8010:8000"
     volumes:
       - knowledge_storage:/storage
+      - ./policies:/policies:ro
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,0 +1,20 @@
+RULE: Invoice PDF
+
+WHEN:
+- content_type is file
+- text contains "Rechnung" or "Invoice"
+
+THEN:
+- set category = document
+- add tags = invoice, finance
+
+---
+
+RULE: Restaurant Idea
+
+WHEN:
+- text contains "Restaurant" or "Essen"
+
+THEN:
+- set category = restaurant
+- add tags = food

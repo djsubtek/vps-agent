@@ -18,13 +18,17 @@ The backend stores uploaded file bytes in a Docker volume mounted at `/storage`.
 
 After file storage, the backend extracts readable text synchronously. PDFs are processed with `pdfplumber`; supported image files are processed with Tesseract OCR through `pytesseract`.
 
+### Policies
+
+The backend loads human-readable rules from `/policies/rules.txt` during ingestion. The first matching rule can set `category` and add `tags` without AI.
+
 ### Docker Compose
 
 Docker Compose runs the FastAPI backend and PostgreSQL database together. The backend image includes Tesseract system packages, is exposed on host port `8010`, and waits for PostgreSQL to pass its healthcheck before starting.
 
 ## Data Flow
 
-Clients call the FastAPI backend over HTTP. The backend reads `DATABASE_URL` from `.env`, connects to PostgreSQL through SQLAlchemy, stores ingestion records in the `items` table, writes uploaded file bytes to `/storage`, and stores extracted text when available.
+Clients call the FastAPI backend over HTTP. The backend reads `DATABASE_URL` from `.env`, connects to PostgreSQL through SQLAlchemy, stores ingestion records in the `items` table, writes uploaded file bytes to `/storage`, stores extracted text when available, and applies matching policies before committing rows.
 
 ## Ingest Flow
 
