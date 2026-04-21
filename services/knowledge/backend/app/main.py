@@ -45,8 +45,9 @@ def index():
     with SessionLocal() as session:
         items = session.query(models.Item).order_by(models.Item.created_at.desc()).limit(50).all()
         counts = get_category_counts(session)
+        latest = get_category_latest(session)
 
-    return render_dashboard([format_search_result(item) for item in items], counts)
+    return render_dashboard([format_search_result(item) for item in items], counts, latest)
 
 
 @app.get("/category/{name}", response_class=HTMLResponse)
@@ -94,57 +95,36 @@ def render_items_page(title, query, items):
     rows = "\n".join(render_item(item) for item in items) or "<p>No items found.</p>"
     safe_title = html.escape(title)
     safe_query = html.escape(query or "")
+    styles = render_styles(900)
     return f"""<!doctype html>
 <html>
   <head>
     <meta charset="utf-8">
     <title>{safe_title}</title>
-    <style>
-      body {{ font-family: sans-serif; max-width: 900px; margin: 32px auto; padding: 0 16px; }}
-      form {{ display: flex; gap: 8px; margin-bottom: 24px; }}
-      input {{ flex: 1; padding: 8px; }}
-      button {{ padding: 8px 12px; }}
-      article {{ border-bottom: 1px solid #ddd; padding: 16px 0; }}
-      .meta {{ color: #666; font-size: 14px; margin-bottom: 8px; }}
-      .tags {{ color: #444; font-size: 14px; }}
-      .preview {{ white-space: pre-wrap; }}
-    </style>
+    {styles}
   </head>
   <body>
     <h1>{safe_title}</h1>
-    <form action="/search" method="get">
+    <form class="search" action="/search" method="get">
       <input name="q" value="{safe_query}" placeholder="Search stored items">
       <button type="submit">Search</button>
     </form>
     <p><a href="/">Latest items</a></p>
-    {rows}
+    <div class="item-grid">{rows}</div>
   </body>
 </html>"""
 
 
-def render_dashboard(items, counts):
+def render_dashboard(items, counts, latest):
     rows = "\n".join(render_item(item) for item in items) or "<p>No items found.</p>"
-    tiles = "\n".join(render_category_tile(category, counts[category]) for category in CATEGORIES)
+    tiles = "\n".join(render_category_tile(category, counts[category], latest.get(category)) for category in CATEGORIES)
+    styles = render_styles(1000)
     return f"""<!doctype html>
 <html>
   <head>
     <meta charset="utf-8">
     <title>Knowledge Dashboard</title>
-    <style>
-      body {{ font-family: sans-serif; max-width: 1000px; margin: 32px auto; padding: 0 16px; }}
-      form {{ margin-bottom: 24px; }}
-      input, button, textarea {{ padding: 8px; }}
-      textarea {{ width: 100%; min-height: 80px; box-sizing: border-box; }}
-      .search {{ display: flex; gap: 8px; }}
-      .search input {{ flex: 1; }}
-      .tiles {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 24px 0; }}
-      .tile {{ border: 1px solid #ddd; padding: 16px; text-decoration: none; color: #111; }}
-      .count {{ font-size: 28px; font-weight: bold; }}
-      article {{ border-bottom: 1px solid #ddd; padding: 16px 0; }}
-      .meta {{ color: #666; font-size: 14px; margin-bottom: 8px; }}
-      .tags {{ color: #444; font-size: 14px; }}
-      .preview {{ white-space: pre-wrap; }}
-    </style>
+    {styles}
   </head>
   <body>
     <h1>Knowledge Dashboard</h1>
@@ -162,27 +142,54 @@ def render_dashboard(items, counts):
     <h2>Categories</h2>
     <div class="tiles">{tiles}</div>
     <h2>Latest Items</h2>
-    {rows}
+    <div class="item-grid">{rows}</div>
   </body>
 </html>"""
 
 
-def render_category_tile(category, count):
+def render_styles(max_width):
+    return f"""<style>
+      body {{ font-family: sans-serif; max-width: {max_width}px; margin: 32px auto; padding: 0 16px; background: #f7f7f7; color: #111; }}
+      form {{ margin-bottom: 24px; }}
+      input, button, textarea {{ padding: 8px; }}
+      textarea {{ width: 100%; min-height: 80px; box-sizing: border-box; }}
+      .search {{ display: flex; gap: 8px; }}
+      .search input {{ flex: 1; }}
+      .tiles {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin: 24px 0; }}
+      .tile {{ display: block; background: #fff; border: 1px solid #d8d8d8; border-radius: 8px; padding: 16px; text-decoration: none; color: #111; }}
+      .tile:hover, .item-card:hover {{ border-color: #888; }}
+      .tile-title {{ font-weight: 700; margin-bottom: 6px; }}
+      .count {{ font-size: 30px; font-weight: bold; margin-bottom: 10px; }}
+      .latest {{ color: #555; font-size: 14px; line-height: 1.35; }}
+      .item-grid {{ display: grid; gap: 14px; }}
+      .item-card {{ display: block; background: #fff; border: 1px solid #d8d8d8; border-radius: 8px; padding: 16px; color: #111; text-decoration: none; }}
+      .badge {{ display: inline-block; border: 1px solid #bbb; border-radius: 999px; padding: 2px 8px; font-size: 12px; margin-bottom: 8px; background: #f1f1f1; }}
+      .title {{ font-size: 18px; font-weight: 700; margin: 0 0 8px; }}
+      .meta {{ color: #666; font-size: 13px; margin-top: 10px; }}
+      .tags {{ color: #444; font-size: 14px; margin-bottom: 8px; }}
+      .preview {{ white-space: pre-wrap; color: #333; line-height: 1.4; }}
+    </style>"""
+
+
+def render_category_tile(category, count, latest):
+    latest_preview = html.escape(latest["content_preview"] if latest else "No items yet")
     return f"""<a class="tile" href="/category/{html.escape(category)}">
-  <div>{html.escape(category.title())}</div>
+  <div class="tile-title">{html.escape(category.title())}</div>
   <div class="count">{count}</div>
+  <div class="latest">{latest_preview}</div>
 </a>"""
 
 
 def render_item(item):
     tags = ", ".join(item["tags"])
-    return f"""<article>
-  <div class="meta">{html.escape(item["created_at"] or "")} | category: {html.escape(item["category"] or "-")}</div>
+    return f"""<a class="item-card" href="/search?q={html.escape(item["id"])}">
+  <div class="badge">{html.escape(item["category"] or "other")}</div>
+  <h3 class="title">{html.escape(item["title"])}</h3>
   <div class="tags">tags: {html.escape(tags or "-")}</div>
-  <p><strong>summary:</strong> {html.escape(item["summary"] or "-")}</p>
-  <p class="preview">{html.escape(item["content_preview"] or "")}</p>
+  <div class="preview">{html.escape(item["content_preview"] or "")}</div>
   {render_file_name(item)}
-</article>"""
+  <div class="meta">{html.escape(item["created_at"] or "")}</div>
+</a>"""
 
 
 def render_file_name(item):
@@ -200,6 +207,16 @@ def get_category_counts(session):
         else:
             counts["other"] += count
     return counts
+
+
+def get_category_latest(session):
+    latest = {}
+    items = session.query(models.Item).order_by(models.Item.created_at.desc()).limit(200).all()
+    for item in items:
+        category = item.category if item.category in CATEGORIES else "other"
+        if category not in latest:
+            latest[category] = format_search_result(item)
+    return latest
 
 
 @app.post("/ingest")
@@ -366,11 +383,22 @@ def format_search_result(item):
         "id": str(item.id),
         "category": item.category,
         "tags": item.tags or [],
+        "title": build_title(item),
         "summary": item.summary,
         "content_preview": build_content_preview(item),
         "file_name": item.file_name,
         "created_at": item.created_at.isoformat() if item.created_at else None,
     }
+
+
+def build_title(item):
+    if item.summary:
+        return item.summary
+    text = item.raw_content or item.extracted_text or item.file_name or "Untitled item"
+    first_line = next((line.strip() for line in text.splitlines() if line.strip()), text.strip())
+    if len(first_line) <= 80:
+        return first_line
+    return f"{first_line[:77]}..."
 
 
 def build_content_preview(item):
