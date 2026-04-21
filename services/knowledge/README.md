@@ -14,6 +14,14 @@ docker compose up -d
 curl http://localhost:8010/health
 ```
 
+## Web UI
+
+Open the minimal browser UI:
+
+```text
+http://localhost:8010
+```
+
 ## Ingest Text
 
 ```bash

@@ -1,9 +1,12 @@
 import base64
+import html
 import logging
 from binascii import Error as Base64Error
 
 from fastapi import FastAPI, Query
 from fastapi import HTTPException
+from fastapi import Request
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 from sqlalchemy import Text, cast, or_
 
@@ -35,8 +38,16 @@ def health():
     return {"status": "ok", "service": "knowledge"}
 
 
+@app.get("/", response_class=HTMLResponse)
+def index():
+    with SessionLocal() as session:
+        items = session.query(models.Item).order_by(models.Item.created_at.desc()).limit(50).all()
+
+    return render_items_page("Knowledge Items", "", [format_search_result(item) for item in items])
+
+
 @app.get("/search")
-def search(q: str = Query(..., min_length=1), category: str | None = None):
+def search(request: Request, q: str = Query(..., min_length=1), category: str | None = None):
     pattern = f"%{q}%"
 
     with SessionLocal() as session:
@@ -52,9 +63,61 @@ def search(q: str = Query(..., min_length=1), category: str | None = None):
         if category:
             query = query.filter(models.Item.category == category)
 
-        items = query.order_by(models.Item.created_at.desc()).limit(20).all()
+        items = query.order_by(models.Item.created_at.desc()).limit(50).all()
 
-    return [format_search_result(item) for item in items]
+    results = [format_search_result(item) for item in items]
+    if "text/html" in request.headers.get("accept", ""):
+        return HTMLResponse(render_items_page("Search Results", q, results))
+    return results
+
+
+def render_items_page(title, query, items):
+    rows = "\n".join(render_item(item) for item in items) or "<p>No items found.</p>"
+    safe_title = html.escape(title)
+    safe_query = html.escape(query or "")
+    return f"""<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>{safe_title}</title>
+    <style>
+      body {{ font-family: sans-serif; max-width: 900px; margin: 32px auto; padding: 0 16px; }}
+      form {{ display: flex; gap: 8px; margin-bottom: 24px; }}
+      input {{ flex: 1; padding: 8px; }}
+      button {{ padding: 8px 12px; }}
+      article {{ border-bottom: 1px solid #ddd; padding: 16px 0; }}
+      .meta {{ color: #666; font-size: 14px; margin-bottom: 8px; }}
+      .tags {{ color: #444; font-size: 14px; }}
+      .preview {{ white-space: pre-wrap; }}
+    </style>
+  </head>
+  <body>
+    <h1>{safe_title}</h1>
+    <form action="/search" method="get">
+      <input name="q" value="{safe_query}" placeholder="Search stored items">
+      <button type="submit">Search</button>
+    </form>
+    <p><a href="/">Latest items</a></p>
+    {rows}
+  </body>
+</html>"""
+
+
+def render_item(item):
+    tags = ", ".join(item["tags"])
+    return f"""<article>
+  <div class="meta">{html.escape(item["created_at"] or "")} | category: {html.escape(item["category"] or "-")}</div>
+  <div class="tags">tags: {html.escape(tags or "-")}</div>
+  <p><strong>summary:</strong> {html.escape(item["summary"] or "-")}</p>
+  <p class="preview">{html.escape(item["content_preview"] or "")}</p>
+  {render_file_name(item)}
+</article>"""
+
+
+def render_file_name(item):
+    if not item.get("file_name"):
+        return ""
+    return f'<p class="meta">file: {html.escape(item["file_name"])}</p>'
 
 
 @app.post("/ingest")
@@ -197,6 +260,7 @@ def format_search_result(item):
         "tags": item.tags or [],
         "summary": item.summary,
         "content_preview": build_content_preview(item),
+        "file_name": item.file_name,
         "created_at": item.created_at.isoformat() if item.created_at else None,
     }
 
