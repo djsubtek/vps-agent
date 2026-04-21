@@ -14,6 +14,7 @@ from app.extraction import extract_text_from_file
 from app.policy_engine import apply_actions, load_rules, match_rule
 from app.storage import save_file
 
+logging.basicConfig(level=logging.INFO)
 ensure_database()
 
 app = FastAPI(title="Knowledge Service")
@@ -21,8 +22,9 @@ logger = logging.getLogger(__name__)
 
 
 class IngestRequest(BaseModel):
-    type: str = Field(..., min_length=1)
+    type: str | None = Field(default=None, min_length=1)
     content: str | None = None
+    text: str | None = None
     source: str | None = None
     file_name: str | None = None
     file_content_base64: str | None = None
@@ -30,7 +32,7 @@ class IngestRequest(BaseModel):
 
 @app.get("/health")
 def health():
-    return {"status": "ok"}
+    return {"status": "ok", "service": "knowledge"}
 
 
 @app.get("/search")
@@ -57,45 +59,74 @@ def search(q: str = Query(..., min_length=1), category: str | None = None):
 
 @app.post("/ingest")
 def ingest(payload: IngestRequest):
-    if payload.type == "file":
-        if not payload.file_content_base64:
-            raise HTTPException(status_code=422, detail="file_content_base64 is required for file ingestion")
+    ingest_type = detect_ingest_type(payload)
+    content = payload.content if payload.content is not None else payload.text
+    logger.info("ingest received type=%s source=%s", ingest_type, payload.source)
 
-        try:
-            file_bytes = base64.b64decode(payload.file_content_base64, validate=True)
-        except Base64Error as exc:
-            raise HTTPException(status_code=422, detail="file_content_base64 must be valid base64") from exc
+    try:
+        if ingest_type == "file":
+            item = ingest_file(payload)
+        else:
+            item = ingest_text(payload, ingest_type, content)
+    except HTTPException:
+        logger.exception("ingest failed type=%s source=%s", ingest_type, payload.source)
+        raise
+    except Exception as exc:
+        logger.exception("ingest failed type=%s source=%s", ingest_type, payload.source)
+        raise HTTPException(status_code=500, detail="ingest failed") from exc
 
-        file_path = save_file(file_bytes, payload.file_name or "upload.bin")
-        extracted_text = None
+    logger.info("ingest stored type=%s source=%s item_id=%s", ingest_type, payload.source, item["id"])
+    return format_ingest_response(item)
 
-        try:
-            extracted_text = extract_text_from_file(file_path)
-        except Exception:
-            logger.exception("file text extraction failed for %s", file_path)
 
-        with SessionLocal() as session:
-            item = models.Item(
-                source=payload.source,
-                content_type="file",
-                file_path=file_path,
-                file_name=payload.file_name,
-                extracted_text=extracted_text,
-                status="processed",
-            )
-            apply_first_matching_policy(item)
-            enrich_with_ai(item)
-            session.add(item)
-            session.commit()
-            session.refresh(item)
+def detect_ingest_type(payload):
+    if payload.type:
+        return payload.type
+    if payload.file_name:
+        return "file"
+    return "text"
 
-        return {"status": "stored", "item_id": str(item.id)}
+
+def ingest_file(payload):
+    if not payload.file_content_base64:
+        raise HTTPException(status_code=422, detail="file_content_base64 is required for file ingestion")
+
+    try:
+        file_bytes = base64.b64decode(payload.file_content_base64, validate=True)
+    except Base64Error as exc:
+        raise HTTPException(status_code=422, detail="file_content_base64 must be valid base64") from exc
+
+    file_path = save_file(file_bytes, payload.file_name or "upload.bin")
+    extracted_text = None
+
+    try:
+        extracted_text = extract_text_from_file(file_path)
+    except Exception:
+        logger.exception("file text extraction failed for %s", file_path)
 
     with SessionLocal() as session:
         item = models.Item(
             source=payload.source,
-            content_type=payload.type,
-            raw_content=payload.content,
+            content_type="file",
+            file_path=file_path,
+            file_name=payload.file_name,
+            extracted_text=extracted_text,
+            status="processed",
+        )
+        apply_first_matching_policy(item)
+        enrich_with_ai(item)
+        session.add(item)
+        session.commit()
+        session.refresh(item)
+        return detach_item(item)
+
+
+def ingest_text(payload, ingest_type, content):
+    with SessionLocal() as session:
+        item = models.Item(
+            source=payload.source,
+            content_type=ingest_type,
+            raw_content=content,
             status="new",
         )
         apply_first_matching_policy(item)
@@ -103,8 +134,25 @@ def ingest(payload: IngestRequest):
         session.add(item)
         session.commit()
         session.refresh(item)
+        return detach_item(item)
 
-    return {"status": "stored", "item_id": str(item.id)}
+
+def detach_item(item):
+    return {
+        "id": item.id,
+        "category": item.category,
+        "tags": item.tags or [],
+        "summary": item.summary,
+    }
+
+
+def format_ingest_response(item):
+    return {
+        "status": "stored",
+        "item_id": str(item["id"]),
+        "category": item["category"],
+        "tags": item["tags"],
+    }
 
 
 def apply_first_matching_policy(item):

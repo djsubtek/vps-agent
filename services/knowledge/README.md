@@ -25,7 +25,25 @@ curl -X POST http://localhost:8010/ingest \
 Expected response:
 
 ```json
-{"status":"stored","item_id":"<uuid>"}
+{"status":"stored","item_id":"<uuid>","category":"restaurant","tags":["food"]}
+```
+
+## OpenClaw Ingest
+
+OpenClaw can forward plain text without setting `type`; the service auto-detects text ingestion:
+
+```bash
+curl -X POST http://localhost:8010/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Restaurant in Köln testen","source":"telegram"}'
+```
+
+If `file_name` is present, the service auto-detects file ingestion:
+
+```bash
+curl -X POST http://localhost:8010/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"file_name":"note.txt","file_content_base64":"SGVsbG8gd29ybGQ=","source":"telegram"}'
 ```
 
 ## Ingest File
@@ -86,4 +104,4 @@ curl "http://localhost:8010/search?q=restaurant&category=restaurant"
 
 ## Architecture
 
-Docker Compose runs a FastAPI backend and PostgreSQL database. The backend reads `DATABASE_URL` from `.env`, initializes the `items` table at startup, stores incoming text payloads through `POST /ingest`, persists uploaded files under `/storage`, extracts text from supported PDFs and images, applies human-readable policies from `policies/rules.txt`, optionally enriches items with AI when `OPENAI_API_KEY` is set, and exposes PostgreSQL-backed search through `GET /search`.
+Docker Compose runs a FastAPI backend and PostgreSQL database. The backend reads `DATABASE_URL` from `.env`, initializes the `items` table at startup, accepts flexible OpenClaw-friendly payloads through `POST /ingest`, persists uploaded files under `/storage`, extracts text from supported PDFs and images, applies human-readable policies from `policies/rules.txt`, optionally enriches items with AI when `OPENAI_API_KEY` is set, and exposes PostgreSQL-backed search through `GET /search`.
