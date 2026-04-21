@@ -34,6 +34,8 @@ def ensure_database():
         "ALTER TABLE items ADD COLUMN IF NOT EXISTS summary TEXT",
         "ALTER TABLE items ADD COLUMN IF NOT EXISTS category TEXT",
         "ALTER TABLE items ADD COLUMN IF NOT EXISTS tags JSONB",
+        "ALTER TABLE items ADD COLUMN IF NOT EXISTS file_path TEXT",
+        "ALTER TABLE items ADD COLUMN IF NOT EXISTS file_name TEXT",
         "ALTER TABLE items ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'new'",
     ]
 

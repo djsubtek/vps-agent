@@ -18,5 +18,7 @@ class Item(Base):
     summary = Column(Text, nullable=True)
     category = Column(Text, nullable=True)
     tags = Column(JSONB, nullable=True)
+    file_path = Column(Text, nullable=True)
+    file_name = Column(Text, nullable=True)
     status = Column(Text, nullable=False, default="new", server_default="new")
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
