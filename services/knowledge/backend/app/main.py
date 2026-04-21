@@ -7,8 +7,9 @@ from fastapi import FastAPI, Query
 from fastapi import HTTPException
 from fastapi import Request
 from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
-from sqlalchemy import Text, cast, or_
+from sqlalchemy import Text, cast, func, or_
 
 from app import models
 from app.classifier import classify_text
@@ -22,6 +23,7 @@ ensure_database()
 
 app = FastAPI(title="Knowledge Service")
 logger = logging.getLogger(__name__)
+CATEGORIES = ["restaurant", "idea", "document", "other"]
 
 
 class IngestRequest(BaseModel):
@@ -42,8 +44,25 @@ def health():
 def index():
     with SessionLocal() as session:
         items = session.query(models.Item).order_by(models.Item.created_at.desc()).limit(50).all()
+        counts = get_category_counts(session)
 
-    return render_items_page("Knowledge Items", "", [format_search_result(item) for item in items])
+    return render_dashboard([format_search_result(item) for item in items], counts)
+
+
+@app.get("/category/{name}", response_class=HTMLResponse)
+def category_view(name: str):
+    if name not in CATEGORIES:
+        raise HTTPException(status_code=404, detail="category not found")
+
+    with SessionLocal() as session:
+        query = session.query(models.Item)
+        if name == "other":
+            query = query.filter(or_(models.Item.category.is_(None), models.Item.category == "other"))
+        else:
+            query = query.filter(models.Item.category == name)
+        items = query.order_by(models.Item.created_at.desc()).limit(50).all()
+
+    return render_items_page(f"{name.title()} Items", "", [format_search_result(item) for item in items])
 
 
 @app.get("/search")
@@ -103,6 +122,58 @@ def render_items_page(title, query, items):
 </html>"""
 
 
+def render_dashboard(items, counts):
+    rows = "\n".join(render_item(item) for item in items) or "<p>No items found.</p>"
+    tiles = "\n".join(render_category_tile(category, counts[category]) for category in CATEGORIES)
+    return f"""<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Knowledge Dashboard</title>
+    <style>
+      body {{ font-family: sans-serif; max-width: 1000px; margin: 32px auto; padding: 0 16px; }}
+      form {{ margin-bottom: 24px; }}
+      input, button, textarea {{ padding: 8px; }}
+      textarea {{ width: 100%; min-height: 80px; box-sizing: border-box; }}
+      .search {{ display: flex; gap: 8px; }}
+      .search input {{ flex: 1; }}
+      .tiles {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 24px 0; }}
+      .tile {{ border: 1px solid #ddd; padding: 16px; text-decoration: none; color: #111; }}
+      .count {{ font-size: 28px; font-weight: bold; }}
+      article {{ border-bottom: 1px solid #ddd; padding: 16px 0; }}
+      .meta {{ color: #666; font-size: 14px; margin-bottom: 8px; }}
+      .tags {{ color: #444; font-size: 14px; }}
+      .preview {{ white-space: pre-wrap; }}
+    </style>
+  </head>
+  <body>
+    <h1>Knowledge Dashboard</h1>
+    <form class="search" action="/search" method="get">
+      <input name="q" placeholder="Search stored items">
+      <button type="submit">Search</button>
+    </form>
+    <form action="/ingest" method="post" enctype="multipart/form-data">
+      <h2>Add Item</h2>
+      <p><textarea name="text" placeholder="Text to store"></textarea></p>
+      <p><input type="file" name="file"></p>
+      <input type="hidden" name="source" value="web">
+      <button type="submit">Upload</button>
+    </form>
+    <h2>Categories</h2>
+    <div class="tiles">{tiles}</div>
+    <h2>Latest Items</h2>
+    {rows}
+  </body>
+</html>"""
+
+
+def render_category_tile(category, count):
+    return f"""<a class="tile" href="/category/{html.escape(category)}">
+  <div>{html.escape(category.title())}</div>
+  <div class="count">{count}</div>
+</a>"""
+
+
 def render_item(item):
     tags = ", ".join(item["tags"])
     return f"""<article>
@@ -120,8 +191,20 @@ def render_file_name(item):
     return f'<p class="meta">file: {html.escape(item["file_name"])}</p>'
 
 
+def get_category_counts(session):
+    counts = dict.fromkeys(CATEGORIES, 0)
+    grouped = session.query(models.Item.category, func.count(models.Item.id)).group_by(models.Item.category).all()
+    for category, count in grouped:
+        if category in counts:
+            counts[category] += count
+        else:
+            counts["other"] += count
+    return counts
+
+
 @app.post("/ingest")
-def ingest(payload: IngestRequest):
+async def ingest(request: Request):
+    payload = await parse_ingest_request(request)
     ingest_type = detect_ingest_type(payload)
     content = payload.content if payload.content is not None else payload.text
     logger.info("ingest received type=%s source=%s", ingest_type, payload.source)
@@ -139,7 +222,32 @@ def ingest(payload: IngestRequest):
         raise HTTPException(status_code=500, detail="ingest failed") from exc
 
     logger.info("ingest stored type=%s source=%s item_id=%s", ingest_type, payload.source, item["id"])
+    if request.headers.get("content-type", "").startswith("multipart/form-data"):
+        return RedirectResponse("/", status_code=303)
     return format_ingest_response(item)
+
+
+async def parse_ingest_request(request):
+    content_type = request.headers.get("content-type", "")
+    if content_type.startswith("multipart/form-data"):
+        form = await request.form()
+        upload = form.get("file")
+        file_name = None
+        file_content_base64 = None
+
+        if upload is not None and getattr(upload, "filename", ""):
+            file_bytes = await upload.read()
+            file_name = upload.filename
+            file_content_base64 = base64.b64encode(file_bytes).decode()
+
+        return IngestRequest(
+            text=form.get("text") or None,
+            source=form.get("source") or "web",
+            file_name=file_name,
+            file_content_base64=file_content_base64,
+        )
+
+    return IngestRequest.model_validate(await request.json())
 
 
 def detect_ingest_type(payload):

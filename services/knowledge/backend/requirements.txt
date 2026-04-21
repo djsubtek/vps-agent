@@ -6,3 +6,4 @@ pytesseract
 pillow
 pdfplumber
 openai
+python-multipart

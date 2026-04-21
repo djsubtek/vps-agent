@@ -16,11 +16,13 @@ curl http://localhost:8010/health
 
 ## Web UI
 
-Open the minimal browser UI:
+Open the dashboard UI:
 
 ```text
 http://localhost:8010
 ```
+
+The dashboard includes search, text/file upload, category tiles, and category-filtered item views.
 
 ## Ingest Text
 
