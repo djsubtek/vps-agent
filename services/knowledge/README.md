@@ -60,6 +60,16 @@ THEN:
 - add tags = food
 ```
 
+## AI Classification
+
+Set `OPENAI_API_KEY` in the environment before starting the service to enable AI enrichment:
+
+```bash
+OPENAI_API_KEY=... docker compose up -d
+```
+
+Ingestion applies rules first, then AI. AI can fill a missing `category`, merge additional `tags`, and set `summary`; it never overwrites a rule-set category or removes existing tags.
+
 ## Architecture
 
-Docker Compose runs a FastAPI backend and PostgreSQL database. The backend reads `DATABASE_URL` from `.env`, initializes the `items` table at startup, stores incoming text payloads through `POST /ingest`, persists uploaded files under `/storage`, extracts text from supported PDFs and images, and applies human-readable policies from `policies/rules.txt`.
+Docker Compose runs a FastAPI backend and PostgreSQL database. The backend reads `DATABASE_URL` from `.env`, initializes the `items` table at startup, stores incoming text payloads through `POST /ingest`, persists uploaded files under `/storage`, extracts text from supported PDFs and images, applies human-readable policies from `policies/rules.txt`, and optionally enriches items with AI when `OPENAI_API_KEY` is set.

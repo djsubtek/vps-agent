@@ -7,6 +7,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, Field
 
 from app import models
+from app.classifier import classify_text
 from app.db import SessionLocal, ensure_database
 from app.extraction import extract_text_from_file
 from app.policy_engine import apply_actions, load_rules, match_rule
@@ -60,6 +61,7 @@ def ingest(payload: IngestRequest):
                 status="processed",
             )
             apply_first_matching_policy(item)
+            enrich_with_ai(item)
             session.add(item)
             session.commit()
             session.refresh(item)
@@ -74,6 +76,7 @@ def ingest(payload: IngestRequest):
             status="new",
         )
         apply_first_matching_policy(item)
+        enrich_with_ai(item)
         session.add(item)
         session.commit()
         session.refresh(item)
@@ -89,3 +92,28 @@ def apply_first_matching_policy(item):
                 return
     except Exception:
         logger.exception("policy application failed")
+
+
+def enrich_with_ai(item):
+    text = item.extracted_text or item.raw_content
+    if not text:
+        return
+
+    try:
+        result = classify_text(text)
+    except Exception:
+        logger.exception("AI classification failed")
+        return
+
+    if not result:
+        return
+
+    if not item.category:
+        item.category = result.get("category")
+
+    existing_tags = item.tags or []
+    new_tags = result.get("tags") or []
+    item.tags = list(dict.fromkeys(existing_tags + new_tags))
+
+    if not item.summary:
+        item.summary = result.get("summary")

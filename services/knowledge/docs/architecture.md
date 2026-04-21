@@ -22,13 +22,17 @@ After file storage, the backend extracts readable text synchronously. PDFs are p
 
 The backend loads human-readable rules from `/policies/rules.txt` during ingestion. The first matching rule can set `category` and add `tags` without AI.
 
+### AI Classification
+
+After policies run, the backend can call OpenAI when `OPENAI_API_KEY` is set. AI enrichment only fills missing fields: it can set `category` if empty, merge additional `tags`, and set `summary` if empty.
+
 ### Docker Compose
 
 Docker Compose runs the FastAPI backend and PostgreSQL database together. The backend image includes Tesseract system packages, is exposed on host port `8010`, and waits for PostgreSQL to pass its healthcheck before starting.
 
 ## Data Flow
 
-Clients call the FastAPI backend over HTTP. The backend reads `DATABASE_URL` from `.env`, connects to PostgreSQL through SQLAlchemy, stores ingestion records in the `items` table, writes uploaded file bytes to `/storage`, stores extracted text when available, and applies matching policies before committing rows.
+Clients call the FastAPI backend over HTTP. The backend reads `DATABASE_URL` from `.env`, connects to PostgreSQL through SQLAlchemy, stores ingestion records in the `items` table, writes uploaded file bytes to `/storage`, stores extracted text when available, applies matching policies, then runs guarded AI enrichment before committing rows.
 
 ## Ingest Flow
 

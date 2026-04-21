@@ -5,3 +5,4 @@ psycopg2-binary
 pytesseract
 pillow
 pdfplumber
+openai
