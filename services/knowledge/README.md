@@ -70,6 +70,20 @@ OPENAI_API_KEY=... docker compose up -d
 
 Ingestion applies rules first, then AI. AI can fill a missing `category`, merge additional `tags`, and set `summary`; it never overwrites a rule-set category or removes existing tags.
 
+## Search
+
+Search stored content, extracted text, summaries, and tags:
+
+```bash
+curl "http://localhost:8010/search?q=restaurant"
+```
+
+Filter by category:
+
+```bash
+curl "http://localhost:8010/search?q=restaurant&category=restaurant"
+```
+
 ## Architecture
 
-Docker Compose runs a FastAPI backend and PostgreSQL database. The backend reads `DATABASE_URL` from `.env`, initializes the `items` table at startup, stores incoming text payloads through `POST /ingest`, persists uploaded files under `/storage`, extracts text from supported PDFs and images, applies human-readable policies from `policies/rules.txt`, and optionally enriches items with AI when `OPENAI_API_KEY` is set.
+Docker Compose runs a FastAPI backend and PostgreSQL database. The backend reads `DATABASE_URL` from `.env`, initializes the `items` table at startup, stores incoming text payloads through `POST /ingest`, persists uploaded files under `/storage`, extracts text from supported PDFs and images, applies human-readable policies from `policies/rules.txt`, optionally enriches items with AI when `OPENAI_API_KEY` is set, and exposes PostgreSQL-backed search through `GET /search`.

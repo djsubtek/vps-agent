@@ -2,9 +2,10 @@ import base64
 import logging
 from binascii import Error as Base64Error
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi import HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import Text, cast, or_
 
 from app import models
 from app.classifier import classify_text
@@ -30,6 +31,28 @@ class IngestRequest(BaseModel):
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+@app.get("/search")
+def search(q: str = Query(..., min_length=1), category: str | None = None):
+    pattern = f"%{q}%"
+
+    with SessionLocal() as session:
+        query = session.query(models.Item).filter(
+            or_(
+                models.Item.raw_content.ilike(pattern),
+                models.Item.extracted_text.ilike(pattern),
+                models.Item.summary.ilike(pattern),
+                cast(models.Item.tags, Text).ilike(pattern),
+            )
+        )
+
+        if category:
+            query = query.filter(models.Item.category == category)
+
+        items = query.order_by(models.Item.created_at.desc()).limit(20).all()
+
+    return [format_search_result(item) for item in items]
 
 
 @app.post("/ingest")
@@ -117,3 +140,22 @@ def enrich_with_ai(item):
 
     if not item.summary:
         item.summary = result.get("summary")
+
+
+def format_search_result(item):
+    return {
+        "id": str(item.id),
+        "category": item.category,
+        "tags": item.tags or [],
+        "summary": item.summary,
+        "content_preview": build_content_preview(item),
+        "created_at": item.created_at.isoformat() if item.created_at else None,
+    }
+
+
+def build_content_preview(item):
+    text = item.raw_content or item.extracted_text or ""
+    text = " ".join(text.split())
+    if len(text) <= 160:
+        return text
+    return f"{text[:157]}..."
